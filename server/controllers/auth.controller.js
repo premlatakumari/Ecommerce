@@ -7,19 +7,9 @@ import cloudinary from "../config/cloudinary.js";
 import { sendToken } from "../utils/sendToken.js";
 import { userResponse } from "../utils/userResponse.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 
 // Configure multer for avatar uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Temporary storage before uploading to Cloudinary
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+const storage = multer.memoryStorage(); 
 
 const fileFilter = (req, file, cb) => {
   // Check if file is an image
@@ -124,35 +114,29 @@ export const register = async (req, res) => {
     let avatarData = null;
     if (req.file) {
       try {
-        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-          folder: "avatars",
-          width: 150,
-          height: 150,
-          crop: "fill",
+        // Upload buffer directly to Cloudinary
+        const uploadResult = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream({
+            folder: "avatars",
+            width: 150,
+            height: 150,
+            crop: "fill",
+          }, (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          });
+          stream.end(req.file.buffer);
         });
+        
         avatarData = {
           public_id: uploadResult.public_id,
           url: uploadResult.secure_url,
         };
-        
-        // Delete temporary file after successful upload
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch (deleteError) {
-          console.error('Failed to delete temporary file:', deleteError);
-        }
       } catch (uploadError) {
         console.error('Cloudinary upload error:', uploadError);
-        
-        // Delete temporary file if upload fails
-        if (req.file && req.file.path) {
-          try {
-            fs.unlinkSync(req.file.path);
-          } catch (deleteError) {
-            console.error('Failed to delete temporary file:', deleteError);
-          }
-        }
-        
         return res.status(500).json({
           success: false,
           message: "Failed to upload avatar image. Please try again."
