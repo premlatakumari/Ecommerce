@@ -52,7 +52,6 @@ function VerifyOtpPage() {
     try {
       const result = await verifyOTP(email, otp);
       if (result.success) {
-        toast.success("Account verified successfully!");
         setTimeout(() => {
           navigate("/login", { state: { fromOtpVerification: true, email } });
         }, 1500);

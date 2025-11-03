@@ -1,5 +1,3 @@
-// src/pages/AdminDashboard.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dashboardService } from '../services/dashboardService';
@@ -17,7 +15,10 @@ import {
     BarChart3,
     Settings,
     ChevronDown,
-    User as UserIcon
+    User as UserIcon,
+    AlertTriangle,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 function AdminDashboard() {
@@ -283,8 +284,9 @@ function AdminDashboard() {
             </div>
             
             {error && (
-                <div className="error-message mb-6">
-                    🛑 {error}
+                <div className="error-message mb-6 flex items-center">
+                    <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+                    {error}
                 </div>
             )}
             
@@ -305,9 +307,7 @@ function AdminDashboard() {
                                 disabled={!pagination.hasPrev}
                                 className="flex items-center px-6 py-3 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-600 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:transform-none"
                             >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
+                                <ChevronLeft className="w-5 h-5 mr-2" />
                                 Previous
                             </button>
                             <button 
@@ -316,9 +316,7 @@ function AdminDashboard() {
                                 className="flex items-center px-6 py-3 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-600 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:transform-none"
                             >
                                 Next
-                                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
+                                <ChevronRight className="w-5 h-5 ml-2" />
                             </button>
                         </div>
                         <div className="text-sm text-slate-700 font-semibold bg-linear-to-br from-indigo-50 to-purple-50 px-6 py-3 rounded-xl border border-indigo-200">

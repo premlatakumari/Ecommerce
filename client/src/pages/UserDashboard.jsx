@@ -5,7 +5,6 @@ import { dashboardService } from "../services/dashboardService";
 import toast from "react-hot-toast";
 import {
   User,
-  Lock,
   LogOut,
   Shield,
   CheckCircle,
@@ -15,8 +14,6 @@ import {
   Phone,
   MapPin,
   Loader,
-  Eye,
-  EyeOff,
   Settings,
   ChevronDown,
   UserCircle,
@@ -207,13 +204,23 @@ function UserDashboard() {
             Account Status
           </h3>
           <span
-            className={`inline-flex px-4 py-2 rounded-full text-sm font-bold shadow-md ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-md ${
               isActive
                 ? "bg-gradient-to-r from-emerald-400 to-green-500 text-white"
                 : "bg-gradient-to-r from-red-400 to-pink-500 text-white"
             }`}
           >
-            {isActive ? "✅ ACTIVE" : "🚫 INACTIVE"}
+            {isActive ? (
+              <>
+                <CheckCircle className="h-4 w-4" />
+                ACTIVE
+              </>
+            ) : (
+              <>
+                <XCircle className="h-4 w-4" />
+                INACTIVE
+              </>
+            )}
           </span>
           <p className="text-sm text-slate-600 mt-3 font-medium">
             {isActive

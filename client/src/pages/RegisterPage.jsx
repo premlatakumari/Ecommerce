@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -13,9 +13,7 @@ import {
   EyeOff,
   ShoppingBag,
   Upload,
-  Check,
-  ImageIcon,
-  LogIn,
+  X,
 } from "lucide-react";
 
 function RegisterPage() {
@@ -30,16 +28,25 @@ function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // Only allow digits
+    const value = e.target.value.replace(/\D/g, ""); 
     setFormData((prev) => ({ ...prev, phone: value }));
   };
 
@@ -49,6 +56,19 @@ function RegisterPage() {
       return "Phone number must be 10 digits";
     }
     return null;
+  };
+
+  const removeAvatar = () => {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setAvatarPreview(null);
+    setFormData((prev) => ({ ...prev, avatar: null }));
+    // Reset the file input
+    const fileInput = document.getElementById('avatar');
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleFileChange = (e) => {
@@ -63,6 +83,16 @@ function RegisterPage() {
         toast.error("Please select a valid image file");
         return;
       }
+
+      // Clean up previous preview URL
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+
+      // Create new preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+
       setFormData((prev) => ({ ...prev, avatar: file }));
     }
   };
@@ -70,8 +100,6 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLoading) return;
-
-    // Client-side validation
     const validationError = validateForm();
     if (validationError) {
       toast.error(validationError);
@@ -317,32 +345,64 @@ function RegisterPage() {
               <Upload className="h-4 w-4 inline mr-2" />
               Profile Photo
             </label>
-            <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:border-slate-400 transition-colors">
-              <div className="space-y-1 text-center">
-                <Upload className="mx-auto h-12 w-12 text-slate-400" />
-                <div className="flex text-sm text-slate-600">
-                  <label
-                    htmlFor="avatar"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500"
+
+            {avatarPreview ? (
+              // Image Preview Section
+              <div className="mt-2 flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-emerald-200 shadow-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeAvatar}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md"
+                    title="Remove image"
                   >
-                    <span>Upload a file</span>
-                    <input
-                      id="avatar"
-                      name="avatar"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      disabled={isLoading}
-                      className="sr-only"
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <p className="text-xs text-slate-500">
-                  PNG, JPG, GIF up to 10MB
-                </p>
+                <div className="text-center">
+                  <p className="text-sm text-slate-600 mb-2">Image selected successfully!</p>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('avatar').click()}
+                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    Change image
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              // Upload Section
+              <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:border-slate-400 transition-colors">
+                <div className="space-y-1 text-center">
+                  <Upload className="mx-auto h-12 w-12 text-slate-400" />
+                  <div className="flex text-sm text-slate-600">
+                    <label
+                      htmlFor="avatar"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500"
+                    >
+                      <span>Upload a file</span>
+                      <input
+                        id="avatar"
+                        name="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={isLoading}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    PNG, JPG, GIF up to 5MB
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <button
